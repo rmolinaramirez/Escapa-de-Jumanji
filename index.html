@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>La Jungla Decide</title>
+
+<style>
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes flash {
+  0% { background-color: rgba(120,0,0,0.6); }
+  100% { background-color: transparent; }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px #cfa44a; }
+  50% { box-shadow: 0 0 25px #ff4444; }
+  100% { box-shadow: 0 0 10px #cfa44a; }
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #2a1a1a, #0b0b0b);
+  color: #f5e6c8;
+  font-family: Georgia, serif;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.container {
+  padding: 24px;
+}
+
+h1 {
+  margin-bottom: 6px;
+}
+
+.timer {
+  font-size: 2.2em;
+  margin: 10px 0;
+  color: #ffcc66;
+}
+
+.pergamino {
+  background: #3a2a18;
+  border: 4px solid #cfa44a;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.codigo {
+  font-size: 2.4em;
+  letter-spacing: 10px;
+}
+
+input {
+  width: 80%;
+  padding: 14px;
+  font-size: 1.6em;
+  text-align: center;
+  letter-spacing: 6px;
+  border-radius: 12px;
+  border: none;
+  margin-top: 12px;
+}
+
+button {
+  margin-top: 16px;
+  width: 85%;
+  padding: 14px;
+  font-size: 1.4em;
+  border-radius: 16px;
+  border: none;
+  background: #cfa44a;
+  animation: pulse 2s infinite;
+}
+
+#error {
+  color: #ff6b6b;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+#imagen {
+  display: none;
+  margin-top: 30px;
+}
+
+img {
+  width: 100%;
+  border-radius: 16px;
+  border: 4px solid #cfa44a;
+}
+
+.flash {
+  animation: flash 0.4s;
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+</style>
+</head>
+
+<body onclick="iniciar()" ontouchstart="iniciar()">
+
+<audio id="ambiente" src="jungle.mp3" loop></audio>
+<audio id="success" src="success.mp3"></audio>
+<audio id="fail" src="fail.mp3"></audio>
+
+<div class="container" id="pantalla">
+  <h1>🌿 LA JUNGLA OS OBSERVA 🌿</h1>
+
+  <div class="timer" id="timer">60</div>
+
+  <div class="pergamino">
+    <p>
+      <strong>Inicialmente</strong> debéis ordenar a los participantes<br>
+      según el código ancestral:
+    </p>
+
+    <div class="codigo">8&nbsp;12&nbsp;17</div>
+
+    <input id="respuesta"
+      type="text"
+      maxlength="3"
+      autocapitalize="characters"
+      autocorrect="off"
+      spellcheck="false"
+      placeholder="CLAVE">
+
+    <button onclick="iniciar(); verificar()">INVOCAR</button>
+
+    <p id="error"></p>
+  </div>
+
+  <div id="imagen">
+    <h2>🏆 LA JUNGLA OS ACEPTA 🏆</h2>
+    <img src="Vale para aventura en la jungla.png">
+  </div>
+</div>
+
+<script>
+let tiempo = 60;
+let intervalo;
+let iniciado = false;
+
+const ambiente = document.getElementById("ambiente");
+const success = document.getElementById("success");
+const fail = document.getElementById("fail");
+const pantalla = document.getElementById("pantalla");
+const timer = document.getElementById("timer");
+
+function vibrar(ms) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+function iniciar() {
+  if (iniciado) return;
+  iniciado = true;
+  ambiente.play();
+  intervalo = setInterval(cuentaAtras, 1000);
+}
+
+function cuentaAtras() {
+  tiempo--;
+  timer.textContent = tiempo;
+
+  if (tiempo <= 20) vibrar(100);
+  if (tiempo <= 10) {
+    pantalla.classList.add("shake");
+    setTimeout(()=>pantalla.classList.remove("shake"),500);
+    vibrar([100,50,100]);
+  }
+
+  if (tiempo <= 0) {
+  tiempo = 0;
+  timer.textContent = tiempo;
+  clearInterval(intervalo);
+  gameOver();
+}
+}
+
+function verificar() {
+  const r = document.getElementById("respuesta").value.toUpperCase().trim();
+  if (r === "HLP") {
+    clearInterval(intervalo);
+    success.play();
+    vibrar([100,50,100]);
+    document.getElementById("imagen").style.display = "block";
+    document.getElementById("error").textContent = "";
+  } else {
+    amenaza();
+  }
+}
+
+function amenaza() {
+  fail.play();
+  vibrar(400);
+  pantalla.classList.add("flash","shake");
+  setTimeout(()=>pantalla.classList.remove("flash","shake"),500);
+  document.getElementById("error").textContent =
+    "⚠️ LA JUNGLA NO ACEPTA ESA CLAVE ⚠️";
+}
+
+function gameOver() {
+  fail.play();
+  vibrar([300,100,300]);
+  document.body.innerHTML = `
+    <h1 style="margin-top:40vh;">💀 LA JUNGLA HA CERRADO EL CAMINO 💀</h1>
+    <p>El ritual ha fallado.</p>
+  `;
+}
+</script>
+
+</body>
+</html>
